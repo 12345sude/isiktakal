@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IŞIKTA KAL – Operatör Paneli (Prototip)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F4F6;--panel:#FFFFFF;--line:#D7DBE0;--line2:#E8EBEE;--text:#1D2329;--muted:#5E6873;
+  --brand:#0E5E6F;--brandsoft:#E3EFF1;--amber:#A86B00;--ambersoft:#FFF3D6;--red:#B42318;--redsoft:#FDE8E6;
+  --gray:#8A939D;--bar:#4F7CAC;--sel:#EEF4F6;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#14181C;--panel:#1C2126;--line:#323940;--line2:#283036;--text:#E6E9EC;--muted:#9AA4AE;
+    --brand:#5FB3C4;--brandsoft:#1E3338;--amber:#E2A93B;--ambersoft:#3A2F17;--red:#F0857A;--redsoft:#3D2220;
+    --gray:#6F7881;--bar:#6E98C4;--sel:#20292E;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14181C;--panel:#1C2126;--line:#323940;--line2:#283036;--text:#E6E9EC;--muted:#9AA4AE;
+  --brand:#5FB3C4;--brandsoft:#1E3338;--amber:#E2A93B;--ambersoft:#3A2F17;--red:#F0857A;--redsoft:#3D2220;
+  --gray:#6F7881;--bar:#6E98C4;--sel:#20292E;color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:14px/1.45 "IBM Plex Sans","Fira Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select{font:inherit;color:inherit}
+.num{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+header{display:flex;align-items:center;gap:16px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-weight:600;letter-spacing:.01em}
+.logo small{font-weight:400;color:var(--muted);margin-left:8px}
+.month{display:flex;align-items:center;gap:8px;margin-left:auto}
+.month input[type=range]{width:180px;accent-color:var(--brand)}
+.month b{min-width:98px;display:inline-block}
+.iconbtn{border:1px solid var(--line);background:var(--panel);border-radius:4px;width:28px;height:28px;cursor:pointer}
+.iconbtn:hover{background:var(--sel)}
+.queue{border:1px solid var(--line);border-radius:4px;padding:4px 10px;color:var(--muted)}
+.queue b{color:var(--text)}
+.note{background:var(--ambersoft);color:var(--text);padding:6px 18px;font-size:12.5px;border-bottom:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);background:var(--panel);border-bottom:1px solid var(--line)}
+.stat{padding:10px 18px;border-right:1px solid var(--line2)}
+.stat:last-child{border-right:0}
+.stat .v{font-size:22px;font-weight:600}
+.stat .l{font-size:12px;color:var(--muted)}
+main{display:grid;grid-template-columns:minmax(380px,44%) 1fr;gap:0;min-height:0}
+.list{border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:0}
+.tools{display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.tabs{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.tabs button{border:0;background:transparent;padding:5px 10px;cursor:pointer;border-right:1px solid var(--line);font-size:13px}
+.tabs button:last-child{border-right:0}
+.tabs button[aria-pressed=true]{background:var(--brand);color:#fff}
+.tools input{flex:1;min-width:120px;border:1px solid var(--line);border-radius:4px;padding:5px 8px;background:var(--panel)}
+.tablewrap{overflow:auto;max-height:calc(100vh - 230px)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:500;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;user-select:none}
+th.r,td.r{text-align:right}
+td{padding:6px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--sel)}
+tbody tr[aria-selected=true]{background:var(--brandsoft)}
+tbody tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.tag{display:inline-block;padding:1px 7px;border-radius:3px;font-size:12px;border:1px solid transparent}
+.t-k{background:var(--ambersoft);color:var(--amber);border-color:color-mix(in srgb,var(--amber) 35%,transparent)}
+.t-r{background:var(--redsoft);color:var(--red);border-color:color-mix(in srgb,var(--red) 35%,transparent)}
+.t-kr{background:var(--red);color:#fff}
+.t-x{background:var(--text);color:var(--panel)}
+.t-b{border-color:var(--line);color:var(--muted)}
+.t-o{color:var(--muted)}
+.empty{padding:24px;color:var(--muted)}
+.detail{padding:16px 20px;overflow:auto;max-height:calc(100vh - 160px)}
+.dh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.dh h2{margin:0;font-size:18px;font-weight:600}
+.dh .muted{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:16px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px 14px;margin-bottom:16px}
+.box h3{margin:0 0 8px;font-size:13px;font-weight:600}
+.box .sub{font-size:12px;color:var(--muted);margin:-4px 0 8px}
+svg text{fill:var(--muted);font-family:inherit}
+.kirow{display:grid;grid-template-columns:34px repeat(12,1fr);font-size:11px;color:var(--muted);margin-top:2px}
+.kirow span{text-align:center}
+.kirow .low{color:var(--amber);font-weight:600}
+.riskv{font-size:28px;font-weight:600}
+.riskbar{height:6px;background:var(--line2);border-radius:3px;position:relative;margin:6px 0 4px}
+.riskbar i{position:absolute;left:0;top:0;bottom:0;background:var(--red);border-radius:3px}
+.riskbar s{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text)}
+.why{list-style:none;padding:0;margin:8px 0 0}
+.why li{display:grid;grid-template-columns:1fr 70px;gap:8px;align-items:center;padding:4px 0;border-top:1px solid var(--line2);font-size:13px}
+.why .c{display:block;height:8px;border-radius:2px}
+.acts{margin:0;padding-left:18px}
+.acts li{margin:3px 0}
+.chan{display:flex;gap:6px;margin:4px 0 8px}
+.chan button{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:13px}
+.chan button[aria-pressed=true]{border-color:var(--brand);color:var(--brand);font-weight:500}
+.msg{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:10px 12px;white-space:pre-wrap;font-size:13.5px}
+.btnrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--brand);background:var(--brand);color:#fff;border-radius:4px;padding:6px 12px;cursor:pointer}
+.btn.sec{background:transparent;color:var(--brand)}
+.btn[disabled]{opacity:.6;cursor:default}
+.approval{font-size:12px;color:var(--muted)}
+.truth{font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+@media (max-width:980px){
+  main{grid-template-columns:1fr}
+  .tablewrap{max-height:45vh}
+  .detail{max-height:none}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .grid2{grid-template-columns:1fr}
+  .month{margin-left:0;width:100%}
+}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.month input[type=range]{flex:1}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">IŞIKTA KAL<small>Operatör paneli, prototip v0.3</small></div>
+  <div class="month">
+    <button class="iconbtn" id="prev" aria-label="Önceki ay">‹</button>
+    <input type="range" id="ay" min="0" max="11" value="10" aria-label="Simülasyon ayı">
+    <button class="iconbtn" id="next" aria-label="Sonraki ay">›</button>
+    <b id="ayAd"></b>
+  </div>
+  <div class="queue">Onay kuyruğu: <b id="kuyruk">0</b></div>
+</header>
+<div class="note">Bu prototip sentetik veriyle çalışır; gerçek abone bilgisi içermez. Abone numaraları ve ilçeler rastgele üretilmiştir.</div>
+<section class="stats" id="stats"></section>
+<main>
+  <section class="list">
+    <div class="tools">
+      <div class="tabs" role="group" aria-label="Filtre" id="tabs">
+        <button data-f="oncelik" aria-pressed="true">Öncelikli</button>
+        <button data-f="kisit" aria-pressed="false">Gizli kısıt</button>
+        <button data-f="risk" aria-pressed="false">Yüksek risk</button>
+        <button data-f="tum" aria-pressed="false">Tümü</button>
+      </div>
+      <input id="ara" type="search" placeholder="Abone no veya ilçe ara" aria-label="Ara">
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th data-s="id">Abone no</th><th data-s="ilce">İlçe</th>
+          <th data-s="ki" class="r">Kısıt ind.</th><th data-s="risk" class="r">Kesinti riski ▾</th><th data-s="dur">Durum</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="bos" hidden>Bu filtrede abone yok. Başka bir ay seçin veya filtreyi değiştirin.</div>
+    </div>
+  </section>
+  <section class="detail" id="detay"></section>
+</main>
+<script>
+const VERI = /*VERI*/null;
+const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+const KISA = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+const TIP = {normal:"Olağan hane",gizli:"Gizli enerji yoksulu",kayan:"Önce kısıtlayıp borca kayan",borclu:"Yalnızca borçlu",verimlilik:"Verimlilik yatırımı yapan",bos:"Boş konut / taşınma"};
+const S = {ay:10,f:"oncelik",q:"",sort:"risk",dir:-1,sec:null,kanal:"ses",kuyruk:new Set(),izle:new Set()};
+const fmt=(x,d=2)=>x.toLocaleString("tr-TR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const yuzde=(x,d=1)=>"%"+fmt(x*100,d);
+function adim(mx){const k=Math.pow(10,Math.floor(Math.log10(mx/4)));for(const c of [1,2,2.5,5,10]){if(mx/(c*k)<=5)return c*k;}return 10*k;}
+
+function durum(h,m){
+  const kesildi = h.kes!==null && m>=h.kes;
+  const ki = h.g[m]/h.b[m];
+  const bos = h.g[m] < 20;
+  const isr = h.isr[m];
+  const risk = h.risk[m];
+  const yuksek = risk!==null && risk>=VERI.esik;
+  let kod="o", ad="Olağan";
+  if(kesildi){kod="x";ad="Kesildi";}
+  else if(isr&&yuksek){kod="kr";ad="Kısıt + risk";}
+  else if(isr){kod="k";ad="Gizli kısıt";}
+  else if(yuksek){kod="r";ad="Yüksek risk";}
+  else if(bos){kod="b";ad="Boş konut";}
+  return {kesildi,ki,bos,isr,risk,yuksek,kod,ad};
+}
+
+function istatistik(){
+  const m=S.ay; let k=0,r=0,kr=0,kes=0,top=0;
+  VERI.hane.forEach(h=>{const d=durum(h,m); if(d.kod==="k")k++; if(d.kod==="r")r++; if(d.kod==="kr")kr++; if(h.kes===m)kes++; if(d.kesildi)top++;});
+  const kut=[[VERI.hane.length.toLocaleString("tr-TR"),"İzlenen abone"],[k,"Gizli kısıt işareti (borç yok)"],[r,"Yüksek kesinti riski"],[kr,"Kısıt ve risk birlikte"],[kes+" / "+top,"Bu ay kesilen / yıl içinde toplam"]];
+  document.getElementById("stats").innerHTML=kut.map(([v,l])=>`<div class="stat"><div class="v num">${v}</div><div class="l">${l}</div></div>`).join("");
+}
+
+function liste(){
+  const m=S.ay, q=S.q.trim().toLocaleLowerCase("tr-TR");
+  let x=VERI.hane.map(h=>({h,d:durum(h,m)}));
+  if(S.f==="oncelik") x=x.filter(o=>["k","r","kr"].includes(o.d.kod));
+  if(S.f==="kisit") x=x.filter(o=>o.d.isr);
+  if(S.f==="risk") x=x.filter(o=>o.d.yuksek);
+  if(q) x=x.filter(o=>o.h.id.includes(q)||o.h.ilce.toLocaleLowerCase("tr-TR").includes(q));
+  const deg={id:o=>o.h.id,ilce:o=>o.h.ilce,ki:o=>o.d.ki,risk:o=>o.d.risk??-1,dur:o=>o.d.ad};
+  x.sort((a,b)=>{const A=deg[S.sort](a),B=deg[S.sort](b);return (A>B?1:A<B?-1:0)*S.dir;});
+  const rows=document.getElementById("rows");
+  rows.innerHTML=x.slice(0,400).map(o=>`<tr tabindex="0" data-id="${o.h.id}" aria-selected="${o.h.id===S.sec}">
+    <td class="num">${o.h.id}</td><td>${o.h.ilce}</td>
+    <td class="r num" style="${o.d.ki<0.7&&!o.d.bos?'color:var(--amber);font-weight:600':''}">${fmt(o.d.ki)}</td>
+    <td class="r num">${o.d.risk===null?"–":yuzde(o.d.risk)}</td>
+    <td><span class="tag t-${o.d.kod}">${o.d.ad}</span></td></tr>`).join("");
+  document.getElementById("bos").hidden=x.length>0;
+  if(!S.sec && x.length) {S.sec=x[0].h.id; rows.querySelector("tr").setAttribute("aria-selected","true");}
+  document.querySelectorAll("th").forEach(th=>{th.textContent=th.textContent.replace(/ [▴▾]$/,""); if(th.dataset.s===S.sort) th.textContent+=S.dir<0?" ▾":" ▴";});
+}
+
+function tuketimGrafik(h,m){
+  const W=560,H=190,L=34,R=6,T=10,B=22, w=(W-L-R)/12;
+  const st=adim(Math.max(...h.b,...h.g)), mx=Math.ceil(Math.max(...h.b,...h.g)/st)*st;
+  const y=v=>T+(H-T-B)*(1-v/mx);
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Aylık beklenen ve gerçekleşen tüketim">`;
+  for(let v=0;v<=mx+1e-9;v+=st){ s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line2)"/><text x="${L-4}" y="${y(v)+3}" font-size="10" text-anchor="end">${Math.round(v)}</text>`;}
+  for(let i=0;i<12;i++){
+    const x=L+i*w+w*0.18, bw=w*0.64, gel=i>m;
+    const op=gel?0.18:1;
+    if(!gel && h.g[i]<h.b[i]*0.80) s+=`<rect x="${x}" y="${y(h.b[i])}" width="${bw}" height="${y(h.g[i])-y(h.b[i])}" fill="var(--amber)" opacity=".28"/>`;
+    s+=`<rect x="${x}" y="${y(h.g[i])}" width="${bw}" height="${H-B-y(h.g[i])}" fill="var(--bar)" opacity="${op}"/>`;
+    s+=`<rect x="${x}" y="${y(h.b[i])}" width="${bw}" height="${H-B-y(h.b[i])}" fill="none" stroke="var(--text)" stroke-width="1" opacity="${gel?0.25:0.9}"/>`;
+    s+=`<text x="${x+bw/2}" y="${H-7}" font-size="10" text-anchor="middle" ${i===m?'style="fill:var(--text);font-weight:600"':''}>${KISA[i]}</text>`;
+  }
+  s+=`<text x="${L}" y="9" font-size="10">kWh</text></svg>`;
+  let ki=`<div class="kirow"><span>ind.</span>`;
+  for(let i=0;i<12;i++){const v=h.g[i]/h.b[i]; ki+=i>m?`<span>·</span>`:`<span class="num ${v<0.7&&h.g[i]>=20?'low':''}">${fmt(v)}</span>`;}
+  return s+ki+"</div>";
+}
+
+function odemeGrafik(h,m){
+  const W=360,H=150,L=30,R=6,T=10,B=22,w=(W-L-R)/12;
+  const mv=Math.max(40,...h.gec.slice(0,m+1)), st=adim(mv), mx=Math.ceil(mv/st)*st, y=v=>T+(H-T-B)*(1-v/mx);
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Aylık ödeme gecikmesi">`;
+  [0,mx/2,mx].forEach(v=>{s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line2)"/><text x="${L-4}" y="${y(v)+3}" font-size="10" text-anchor="end">${Math.round(v)}</text>`;});
+  for(let i=0;i<12;i++){
+    const x=L+i*w+w*0.2,bw=w*0.6;
+    if(i<=m && !(h.kes!==null&&i>h.kes)){
+      const odenmedi=h.od[i]===0;
+      s+=`<rect x="${x}" y="${y(h.gec[i])}" width="${bw}" height="${H-B-y(h.gec[i])}" fill="${odenmedi?'var(--red)':'var(--gray)'}"/>`;
+    }
+    if(h.kes===i) s+=`<text x="${x+bw/2}" y="${T+10}" font-size="10" text-anchor="middle" style="fill:var(--red);font-weight:600">kesinti</text>`;
+    s+=`<text x="${x+bw/2}" y="${H-7}" font-size="10" text-anchor="middle">${KISA[i][0]}</text>`;
+  }
+  return s+`<text x="${L}" y="9" font-size="10">gün</text></svg>`;
+}
+
+function neden(h,m,d){
+  if(d.risk===null) return "";
+  const n=h.neden[m], oz=VERI.oz;
+  const gec3=Math.round(h.gec.slice(Math.max(0,m-2),m+1).reduce((a,b)=>a+b,0)/Math.min(3,m+1));
+  const od3=h.od.slice(Math.max(0,m-2),m+1).filter(v=>v===0).length;
+  const kis=[];for(let i=Math.max(0,m-2);i<=m;i++)kis.push(h.g[i]/h.b[i]);
+  const ki=d.ki, tr=m>=2?ki-h.g[m-2]/h.b[m-2]:0;
+  const metin={
+    gecikme:`Son fatura ${h.gec[m]} gün gecikmeli`,
+    gecikme_ort3:`Son 3 ayda ortalama ${gec3} gün gecikme`,
+    odenmemis_3:od3?`Son 3 ayda ${od3} ödenmemiş fatura`:`Son 3 ayda ödenmemiş fatura yok`,
+    ki:`Bu ay tüketim beklenenin ${ki<1?yuzde(1-ki,0)+" altında":yuzde(ki-1,0)+" üstünde"}`,
+    ki_min3:`Son 3 ayın en düşük indeksi ${fmt(Math.min(...kis))}`,
+    ki_alti_08:`Son 3 ayın ${kis.filter(v=>v<0.8).length} tanesinde indeks 0,80 altında`,
+    ki_trend:`İndeks 2 ayda ${tr>=0?"+":""}${fmt(tr)} değişti`
+  };
+  const sirali=oz.map((f,i)=>({f,v:n[i]})).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,4);
+  const mx=Math.max(...sirali.map(o=>Math.abs(o.v)),0.01);
+  return `<ul class="why">${sirali.map(o=>`<li><span>${metin[o.f]}</span><span title="${o.v>0?'riski artırıyor':'riski azaltıyor'}" style="display:flex;justify-content:${o.v>0?'flex-start':'flex-end'}"><i class="c" style="width:${Math.max(6,Math.abs(o.v)/mx*66)}px;background:${o.v>0?'var(--red)':'var(--gray)'}"></i></span></li>`).join("")}</ul>
+  <div class="sub" style="margin-top:6px">Kırmızı: riski artıran, gri: azaltan etkenler (modelin SHAP katkıları).</div>`;
+}
+
+function oneri(h,m,d){
+  if(d.kesildi) return {baslik:"Kesinti yapılmış",adim:["Yeniden bağlama için ödeme planı görüşmesi","Uzman temsilci araması"],onay:true,mesaj:null};
+  if(d.bos) return {baslik:"İşlem önerilmiyor",adim:["Tüketim neredeyse sıfır: konut boş veya taşınma olabilir","Sayaç okuma ve abonelik durumunu kontrol et"],onay:false,mesaj:null};
+  const od3=h.od.slice(Math.max(0,m-2),m+1).filter(v=>v===0).length;
+  if(d.isr && d.yuksek) return {baslik:"Öncelikli: uzman temsilci görüşmesi",adim:["Gelir gününe hizalı vade ve taksit seçeneği","Isınma durumu ve hane ihtiyacını konuşma","Sosyal destek başvurusu hakkında bilgilendirme"],onay:true,tur:"kr"};
+  if(d.isr) return {baslik:"Proaktif destek: borç yok, tüketim kısıtlanıyor",adim:["Son ödeme gününü gelir gününe hizalama","Kışa yönelik mevsimsel denkleştirme teklifi","Kişiye özel verimlilik önerisi","İsteğe bağlı sosyal destek bilgisi"],onay:false,tur:"k"};
+  if(d.yuksek) return {baslik:od3>=2?"Taksit planı önerisi":"Esnek ödeme önerisi",adim:od3>=2?["Birikmiş borç için faizsiz kısa vadeli taksit","Haftalık küçük tutarlı ödeme seçeneği"]:["Haftalık küçük tutarlı ödeme seçeneği","Son ödeme gününü gelir gününe hizalama"],onay:true,tur:"r"};
+  return {baslik:"İzlemeye devam",adim:["Şu an müdahale gerekmiyor"],onay:false,mesaj:null};
+}
+
+function mesaj(o,h,m,d,kanal){
+  if(!o.tur) return null;
+  const alt=d.ki<1?yuzde(1-d.ki,0):null;
+  const giris = kanal==="ses" ? "Merhaba, ben elektrik şirketinizin dijital asistanıyım. " : "Merhaba, elektrik şirketinizin dijital asistanından yazıyoruz. ";
+  if(o.tur==="k"){
+    if(kanal==="sms") return `Elektrik şirketiniz: Son ödeme gününüzü maaşınızın veya emekli aylığınızın yattığı güne almak ister misiniz? Ek ücret yok. Evet için 1 yazın.`;
+    return giris+`Borcunuz yok, bir sorun yok. ${AYLAR[m]} ayında tüketiminiz hava koşullarına göre beklenenden ${alt} düşük görünüyor. Bu bazen faturanın, maaşın yattığı günden önce gelmesinden kaynaklanabiliyor.\n\nSize üç kolaylık önerebilirim:\n1. Son ödeme gününü maaşınızın ya da emekli aylığınızın yattığı güne almak\n2. Kış faturalarını yaz aylarına yayan denkleştirme\n3. Evinizi daha az enerjiyle ısıtmak için öneriler\n\nİsterseniz bu bilgileri bir yakınınızla da paylaşabilirim.`;
+  }
+  if(o.tur==="r"){
+    if(kanal==="sms") return `Elektrik şirketiniz: Faturanızı taksitle veya haftalık küçük tutarlarla ödeyebilirsiniz. Görüşmek için 1 yazın, sizi arayalım.`;
+    return giris+`Son faturalarınızın ödemesinde zorlandığınızı görüyoruz. Kesinti olmadan çözebilmek için ödemeyi taksitlere ya da haftalık küçük tutarlara bölebiliriz.\n\nUygun bir plan için bir temsilcimiz sizi arayabilir. Ne zaman aranmak istersiniz?`;
+  }
+  if(kanal==="sms") return `Elektrik şirketiniz: Size uygun bir ödeme planı için temsilcimiz sizi arayacak. Uygun saati bildirmek için 1 yazın.`;
+  return giris+`Son aylarda hem tüketiminiz beklenenden ${alt} düşük hem de ödemelerde gecikme var. Kesinti yaşamamanız için size özel bir plan hazırlamak istiyoruz.\n\nBir temsilcimiz sizi arayıp ödeme seçeneklerini ve başvurabileceğiniz destekleri anlatacak. Ne zaman aranmak istersiniz?`;
+}
+
+function detay(){
+  const el=document.getElementById("detay");
+  const h=VERI.hane.find(x=>x.id===S.sec);
+  if(!h){el.innerHTML=`<p class="empty">Soldaki listeden bir abone seçin.</p>`;return;}
+  const m=S.ay, d=durum(h,m), o=oneri(h,m,d), msg=mesaj(o,h,m,d,S.kanal);
+  const kuyrukta=S.kuyruk.has(h.id+":"+m), izlenen=S.izle.has(h.id);
+  const ilkIsr=h.isr.findIndex(v=>v);
+  el.innerHTML=`
+  <div class="dh"><h2 class="num">Abone ${h.id}</h2><span class="muted">${h.ilce}, konut</span><span class="tag t-${d.kod}">${d.ad}</span>
+    ${ilkIsr>=0&&ilkIsr<=m?`<span class="muted">İlk kısıt işareti: ${AYLAR[ilkIsr]}</span>`:""}</div>
+  <div class="box"><h3>Aylık tüketim: gerçekleşen ve hava koşuluna göre beklenen</h3>
+    <div class="sub">Mavi çubuk gerçekleşen, çerçeve beklenen tüketim; sarı alan karşılanmayan ihtiyaç. Alttaki satır Kısıt İndeksi.</div>
+    ${tuketimGrafik(h,m)}</div>
+  <div class="grid2">
+    <div class="box"><h3>${o.baslik}</h3>
+      <ol class="acts">${o.adim.map(a=>`<li>${a}</li>`).join("")}</ol>
+      ${msg?`<div style="margin-top:10px"><div class="chan" role="group" aria-label="Kanal">
+        ${[["ses","Sesli arama"],["wa","WhatsApp"],["sms","SMS"]].map(([k,a])=>`<button data-k="${k}" aria-pressed="${S.kanal===k}">${a}</button>`).join("")}</div>
+        <div class="msg">${msg}</div></div>`:""}
+      <div class="btnrow">
+        ${o.tur?`<button class="btn" id="gonder" ${kuyrukta?"disabled":""}>${kuyrukta?"Onay kuyruğunda":(o.onay?"Temsilci onayına gönder":"Planla ve gönder")}</button>`:""}
+        <button class="btn sec" id="izle">${izlenen?"İzleme listesinde":"İzleme listesine al"}</button>
+        ${o.onay?`<span class="approval">Finansal taahhüt içerdiği için temsilci onayı gerekir.</span>`:""}
+      </div>
+    </div>
+    <div>
+      <div class="box"><h3>Kesinti riski (önümüzdeki 3 ay)</h3>
+        ${d.risk===null?`<p class="muted" style="margin:0">${d.kesildi?"Abone bu ay itibarıyla kesik; risk hesaplanmıyor.":"Veri yok."}</p>`:`
+        <div class="riskv num" style="color:${d.yuksek?'var(--red)':'var(--text)'}">${yuzde(d.risk)}</div>
+        <div class="riskbar"><i style="width:${Math.max(1,d.risk*100)}%"></i><s style="left:${VERI.esik*100}%"></s></div>
+        <div class="sub">Dikey çizgi: en riskli %5 eşiği (${yuzde(VERI.esik)})</div>${neden(h,m,d)}`}
+      </div>
+      <div class="box"><h3>Ödeme gecikmesi</h3><div class="sub">Kırmızı: ödenmemiş fatura</div>${odemeGrafik(h,m)}</div>
+    </div>
+  </div>
+  <div class="truth">Simülasyondaki gerçek hane tipi: <b>${TIP[h.tip]}</b>. Model bu bilgiyi görmez; yalnızca prototipin doğruluğunu kontrol etmek için gösterilir.</div>`;
+  el.querySelectorAll(".chan button").forEach(b=>b.onclick=()=>{S.kanal=b.dataset.k;detay();});
+  const g=document.getElementById("gonder"); if(g) g.onclick=()=>{S.kuyruk.add(h.id+":"+m);document.getElementById("kuyruk").textContent=S.kuyruk.size;detay();};
+  document.getElementById("izle").onclick=()=>{izlenen?S.izle.delete(h.id):S.izle.add(h.id);detay();};
+}
+
+function ciz(){
+  document.getElementById("ayAd").textContent=AYLAR[S.ay]+" 2025";
+  document.getElementById("ay").value=S.ay;
+  istatistik(); liste(); detay();
+}
+document.getElementById("ay").oninput=e=>{S.ay=+e.target.value;ciz();};
+document.getElementById("prev").onclick=()=>{S.ay=Math.max(0,S.ay-1);ciz();};
+document.getElementById("next").onclick=()=>{S.ay=Math.min(11,S.ay+1);ciz();};
+document.getElementById("ara").oninput=e=>{S.q=e.target.value;liste();};
+document.getElementById("tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;S.f=b.dataset.f;document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));liste();};
+document.querySelector("thead").onclick=e=>{const th=e.target.closest("th");if(!th)return;const s=th.dataset.s;S.dir=S.sort===s?-S.dir:(s==="id"||s==="ilce"?1:-1);S.sort=s;liste();};
+const sec=e=>{const tr=e.target.closest("tr[data-id]");if(!tr)return;S.sec=tr.dataset.id;document.querySelectorAll("#rows tr").forEach(r=>r.setAttribute("aria-selected",r===tr));detay();};
+document.getElementById("rows").onclick=sec;
+document.getElementById("rows").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();sec(e);}};
+ciz();
+</script>
+</body>
+</html>
